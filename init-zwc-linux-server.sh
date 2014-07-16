@@ -3,6 +3,8 @@
 #Written by Jinzhao.Meng on 26th,June,2014
 TMPDIR=/tmp
 NFSIP=10.71.64.28
+
+
 function host_yum_nfs
 {
     IPADDR=$(ifconfig|grep 10.71|awk -F':' '{print $2}'|awk -F' ' '{print $1}') 
