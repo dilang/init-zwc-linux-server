@@ -2,13 +2,13 @@
 #This scrip is for Web Server's initialization.
 #Written by Jinzhao.Meng on 26th,June,2014
 TMP_DIR=/tmp
-NFS_IP=10.71.64.28
+NFS_SERVER=10.71.64.28
 
 function host_yum_nfs
 {
-    IPADDR=$(ifconfig|grep 10.71|awk -F':' '{print $2}'|awk -F' ' '{print $1}') 
-    HOST_PREFIX=$(echo $IPADDR|awk -F "." '{print $3"."$4}')
-    HOSTNAME=$HOST_PREFIX.web.gzqxg.inzwc.com
+    IP_ADDR=$(ifconfig|grep 10.71|awk -F':' '{print $2}'|awk -F' ' '{print $1}') 
+    HOST_PRE=$(echo $IP_ADDR|awk -F "." '{print $3"."$4}')
+    HOSTNAME=$HOST_PRE.web.gzqxg.inzwc.com
     hostname $HOSTNAME
     sed -i "s/localhost.localdomain/$HOSTNAME/g" /etc/sysconfig/network
 
@@ -20,11 +20,11 @@ function host_yum_nfs
 # NFS Mount
     chkconfig rpcbind on
     mkdir /nfs
-    mount -o nolock,vers=3 $NFS_IP:/data0/nfs /nfs
+    mount -o nolock,vers=3 $NFS_SERVER:/data0/nfs /nfs
 #if you want mount NFS from /etc/fstab,use follow command
 #echo "10.71.64.28:/data0/nfs    /nfs    nfs    rw,nolock,noatime,nodiratime,rsize=8192,wsize=8192,vers=3,soft,intr 0 0" >> /etc/fatab
 #but sometimes it may not work,so I use the second command and add it to /etc/rc.d/rc.local
-    echo "mount -o nolock,vers=3 $NFS_IP:/data0/nfs /nfs" >> /etc/rc.d/rc.local
+    echo "mount -o nolock,vers=3 $NFS_SERVER:/data0/nfs /nfs" >> /etc/rc.d/rc.local
 }
 
 # Cleanaccounts and other script created by sina
@@ -96,6 +96,7 @@ function disables
 #Disable IPv6
     echo "NETWORKING_IPV6=no" >> /etc/sysconfig/network
     echo "IPV6INIT=no" >> /etc/sysconfig/network
+#Disable iptalbes    
     chkconfig iptables off
     service iptables stop
 }
@@ -236,7 +237,7 @@ function pkg_install
 	#configuration
     cp -rf /nfs/zabbix_template/* /etc/zabbix/
     chown -R zabbix.zabbix /etc/zabbix/
-    sed -i "s/Hostname=/Hostname=$IPADDR/g" /etc/zabbix/zabbix_agentd.conf
+    sed -i "s/Hostname=/Hostname=$IP_ADDR/g" /etc/zabbix/zabbix_agentd.conf
 
     chmod 640 /etc/sudoers
 
@@ -270,12 +271,12 @@ echo ""
 	#Puppet installation
 	echo "====================安装puppet================"
 	#add puppet source
-	rpm -ivh /nfs/pkg/puppet/puppetlabs-release-6-7.noarch.rpm 
+	rpm -ivh /nfs/pkg/puppetlabs-release-6-7.noarch.rpm 
 	yum install puppet -y
 
 	echo "server=215.salt.kvm74.gzqxg.inzwc.com" >> /etc/puppet/puppet.conf
 	echo "listen=true" >> /etc/puppet/puppet.conf
-	echo "$IPADDR   $HOSTNAME" >> /etc/hosts
+	echo "$IP_ADDR   $HOSTNAME" >> /etc/hosts
 	/usr/bin/puppet agent --test
 	echo "*/10 * * * * /usr/bin/puppet agent --test > /dev/null 2>&1" >> /var/spool/cron/root
 	echo ""
