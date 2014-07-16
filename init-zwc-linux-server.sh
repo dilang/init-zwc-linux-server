@@ -2,7 +2,7 @@
 #This scrip is for Web Server's initialization.
 #Written by Jinzhao.Meng on 26th,June,2014
 TMP_DIR=/tmp
-NFS_SERVER=10.71.64.28
+NFS=10.71.64.28
 
 function host_yum_nfs
 {
@@ -20,11 +20,11 @@ function host_yum_nfs
 # NFS Mount
     chkconfig rpcbind on
     mkdir /nfs
-    mount -o nolock,vers=3 $NFS_SERVER:/data0/nfs /nfs
+    mount -o nolock,vers=3 $NFS:/data0/nfs /nfs
 #if you want mount NFS from /etc/fstab,use follow command
 #echo "10.71.64.28:/data0/nfs    /nfs    nfs    rw,nolock,noatime,nodiratime,rsize=8192,wsize=8192,vers=3,soft,intr 0 0" >> /etc/fatab
 #but sometimes it may not work,so I use the second command and add it to /etc/rc.d/rc.local
-    echo "mount -o nolock,vers=3 $NFS_SERVER:/data0/nfs /nfs" >> /etc/rc.d/rc.local
+    echo "mount -o nolock,vers=3 $NFS:/data0/nfs /nfs" >> /etc/rc.d/rc.local
 }
 
 # Cleanaccounts and other script created by sina
