@@ -1,7 +1,7 @@
 #!/bin/bash
 #This scrip is for Web Server's initialization.
 #Written by Jinzhao.Meng on 26th,June,2014
-TMP_DIR=/tmp
+TMPDIR=/tmp
 NFS=10.71.64.28
 
 function host_yum_nfs
@@ -212,6 +212,7 @@ function pkg_install
 
     #MFS installation 
     echo "===================安装mfs====================="
+    cd $TMPDIR
     yum -y install fuse-devel fuse zlib-devel
     tar -zxf /nfs/pkg/mfs-1.6.27-1.tar.gz
     cd mfs-1.6.27
@@ -228,6 +229,7 @@ function pkg_install
 	#install sysstat for zabbix I/O monitor
     yum install sysstat -y
 	#install zbbix
+    cd $TMPDIR
     tar -zxf /nfs/pkg/zabbix-2.0.3.tar.gz
     cd zabbix-2.0.3
     ./configure --prefix=/usr/local/zabbix --sysconfdir=/etc/zabbix --enable-agent
@@ -304,10 +306,10 @@ EOF
 	source /etc/profile
 	#install jdk
 	tar -zxf /nfs/pkg/jdk-7u15-linux-x64.tar.gz -C /usr/java
-	cd /usr/java
-	chown -R root:root jdk1.7.0_15
-	rm -f latest
-	ln -s /usr/java/jdk1.7.0_15 latest
+	#cd /usr/java
+	chown -R root:root /usr/java/jdk1.7.0_15
+	rm -f /usr/java/latest
+	ln -s /usr/java/jdk1.7.0_15 /usr/java/latest
 	java -version
 	echo ""
 
