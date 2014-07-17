@@ -1,6 +1,12 @@
 #!/bin/bash
 #This scrip is for Web Server's initialization.
 #Written by Jinzhao.Meng on 26th,June,2014
+FLAG=x
+while [ $FLAG != A  -a $FLAG != a -a $FLAG != B -a $FLAG != b ]
+do
+echo "请输入需要初始化的机器类型：A，Web服务器 B,数据库服务器"
+read FLAG
+done
 TMPDIR=/tmp
 NFS=10.71.64.28
 
@@ -182,27 +188,37 @@ function system_set
     echo "*.*    @10.71.64.29" >> /etc/rsyslog.conf
     /etc/init.d/rsyslog reload
 
-
     #Ntpdate
     yum install ntp -y
     sed -i '/ntpdate/d' /var/spool/cron/root
     echo "1 * * * * /usr/sbin/ntpdate tiger.sina.com.cn >/dev/null" >> /var/spool/cron/root
 
+    #Make suer that the system is running on level 3
+    sed -i 's/id:5/id:3/g' /etc/inittab
+
+    #decrease the number of system tty to 2
+    sed -i 's/1-6/1-2/g' /etc/init/start-ttys.conf
 
     #File description
-    echo "*		soft    nofile  80240" >> /etc/security/limits.conf
-    echo "*         hard    nofile  80240" >> /etc/security/limits.conf
+    if [ $FLAG = A ] || [ $FLAG = a ];then
+	echo "*	soft    nofile  80240" >> /etc/security/limits.conf
+    	echo "*     hard    nofile  80240" >> /etc/security/limits.conf
+    	sed -i 's/1024/80240/g' /etc/security/limits.d/90-nproc.conf
+    	echo "root       soft    nproc     unlimited" >> /etc/security/limits.d/90-nproc.conf
+    	echo "*          hard    nproc     802400" >> /etc/security/limits.d/90-nproc.conf
 
-    sed -i 's/1024/80240/g' /etc/security/limits.d/90-nproc.conf
-    echo "root       soft    nproc     unlimited" >> /etc/security/limits.d/90-nproc.conf
-    echo "*          hard    nproc     802400" >> /etc/security/limits.d/90-nproc.conf
+    elif [ $FLAG  = B ] || [ $FLAG = b ];then
+	echo "*                   soft    nofile  10240" >> /etc/security/limits.conf
+	echo "*                   hard    nofile  10240" >> /etc/security/limits.conf
+	echo "oracle              soft    nproc   2047" >> /etc/security/limits.conf
+	echo "oracle              hard    nproc   16384" >> /etc/security/limits.conf
+	echo "oracle              soft    nofile  1024" >> /etc/security/limits.conf
+	echo "oracle              hard    nofile  65536" >> /etc/security/limits.conf
+	echo "oracle              soft    stack   10240" >> /etc/security/limits.conf
 
-	#Make suer that the system is running on level 3
-	sed -i 's/id:5/id:3/g' /etc/inittab
-
-	#decrease the number of system tty to 2
-	sed -i 's/1-6/1-2/g' /etc/init/start-ttys.conf
-
+	echo "*   soft   memlock    74448896" >> /etc/security/limits.conf
+	echo "*   hard   memlock    74448896" >> /etc/security/limits.conf
+    fi
 }
 
 function pkg_install
@@ -360,10 +376,24 @@ function dir_and_profile
 	ln -s /mfs/ShareFile/upload /data0/www/upload
 	mkdir /script
 	rsync -av /nfs/script/57/ /script
-	hmod +x -R /script
+	chmod +x -R /script
 
 	echo "alias vi=vim" >> /etc/profile
 	echo 'export PS1="\[\e]0;\a\]\n\[\e[1;32m\]\[\e[1;33m\]\H\[\e[1;35m\]<\$(date +\"%Y-%m-%d %T\")> \[\e[32m\]\w\[\e[0m\]\n\u>\\$ "' >> /etc/profile
+
+#if the server is database server
+if [ $FLAG  = B ] || [ $FLAG = b ];then
+cat  << EOF >> /etc/profile
+if [ $USER = "oracle" ]; then
+if [ $SHELL = "/bin/ksh" ]; then
+ulimit -u 16384
+ulimit -n 65536
+else
+ulimit -u 16384 -n 65536
+fi
+fi
+EOF
+fi
 	source /etc/profile
 }
 
@@ -378,7 +408,9 @@ function main
 	pkg_install
 	dir_and_profile
 }
-echo "***************欢迎对系统进行安全初始化设置***************"
+
+
+echo "***************清选择要做的操作***************"
 echo "1.修改主机名、yum配置，挂载NFS"
 echo "2.清除sina相关用户及设置"
 echo "3.添加新用户"
