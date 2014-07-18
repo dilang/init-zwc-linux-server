@@ -8,6 +8,7 @@ echo "请输入需要初始化的机器类型：A，Web服务器 B,数据库服�
 read FLAG
 done
 TMPDIR=/tmp
+$HOMEDIR=/usr/home
 NFS=10.71.64.28
 
 function host_yum_nfs
@@ -33,7 +34,7 @@ function host_yum_nfs
     echo "mount -o nolock,vers=3 $NFS:/data0/nfs /nfs" >> /etc/rc.d/rc.local
 }
 
-# Cleanaccounts and other script created by sina
+# Clean accounts and other scripts created by sina
 function clean_sina
 {
     echo "清除sina相关初始项"
@@ -86,11 +87,11 @@ function add_user_group
     chattr +i  /etc/passwd /etc/shadow
 
 #Set www user ssh keys
-    mkdir /usr/home/www/.ssh
-    chmod 700 /usr/home/www/.ssh
-    cat /nfs/id_rsa.pub >> /usr/home/www/.ssh/authorized_keys
-    chmod 600 /usr/home/www/.ssh/authorized_keys
-    chown -R www:www /usr/home/www/.ssh
+    mkdir $HOMEDIR/www/.ssh
+    chmod 700 $HOMEDIR/www/.ssh
+    cat /nfs/id_rsa.pub >> $HOMEDIR/www/.ssh/authorized_keys
+    chmod 600 $HOMEDIR/www/.ssh/authorized_keys
+    chown -R www:www /$HOMEDIR/www/.ssh
 }
 
 
