@@ -1,15 +1,17 @@
 #!/bin/bash
 #This scrip is for Web Server's initialization.
 #Written by Jinzhao.Meng on 26th,June,2014
+
+TMPDIR=/tmp
+HOMEDIR=/usr/home
+NFS=10.71.64.28
 FLAG=x
 while [ $FLAG != A  -a $FLAG != a -a $FLAG != B -a $FLAG != b ]
 do
 echo "请输入需要初始化的机器类型：A，Web服务器 B,数据库服务器"
 read FLAG
 done
-TMPDIR=/tmp
-HOMEDIR=/usr/home
-NFS=10.71.64.28
+
 
 function host_yum_nfs
 {
