@@ -8,7 +8,7 @@ echo "请输入需要初始化的机器类型：A，Web服务器 B,数据库服�
 read FLAG
 done
 TMPDIR=/tmp
-$HOMEDIR=/usr/home
+HOMEDIR=/usr/home
 NFS=10.71.64.28
 
 function host_yum_nfs
